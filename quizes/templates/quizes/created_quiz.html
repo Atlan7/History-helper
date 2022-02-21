@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %} 
+    Tecт
+{% endblock %}
+
+{% block content %}
+    
+    <div class="quiz">
+        <h1> Опрос по статье </h1>
+
+        <hr>
+       
+        {% for question in questions %}
+            <br>
+            <br>
+            <div name="question" id="{{ question.pk }}">
+                <h2> {{ forloop.counter }}) <strong> {{ question }} </strong> </h2>
+                    <div class="bd-example" style="padding: 1.5rem;margin: 1rem -.75rem 0;border-width: 1px;border-radius: .50rem;border: solid #dee2e6;">
+
+                        {% for answer in question.get_answers %} 
+                            <div class="alert alert-primary" role="alert">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="answer_to_question_{{question.pk}}" id="{{answer.pk}}-{{question.pk}}">
+                                    <label class="form-check-label" for="{{answer.pk}}-{{question.pk}}">
+                                        {{ answer.text }}
+                                    </label>
+                                </div>
+                            </div>
+                        {% endfor %}
+
+                    </div>
+                </div>
+            <br>
+
+            
+        {% endfor %}
+
+            <button type="button" class="btn btn-primary" onclick="passAnswers()"> 
+                Завершить тест 
+            </button> 
+            <br> 
+            <br> 
+            <br> 
+
+    </div>
+
+    <script type="text/javascript">
+        function passAnswers() {
+            let questions = document.getElementsByName("question")
+            let answers = []
+            for (let i = 0; i < questions.length; i++) {
+                let chosen_answer = document.querySelector(`input[name = answer_to_question_${i+1}]:checked`)
+                if (chosen_answer) {
+                    answers.push([+questions[i].id, +chosen_answer.id.split("-")[0]])
+                } else {
+                    answers.push([+questions[i].id, 'None'])
+                }
+            }
+
+            cleaned_data = JSON.stringify(answers)
+            $.ajax({
+                type: "POST", data: {
+                    "list_of_answers": cleaned_data, 
+                    "csrfmiddlewaretoken": "{{csrf_token}}"
+                },
+                url: "{% url 'quizes:view-results-of-quiz' %}",
+                dataType: "json",
+                success: function (data) {
+                    $(".quiz").html(data)
+                },
+                failure: function () {
+                    alert("failure");
+                }
+            });
+        }
+    </script>
+
+{% endblock %}

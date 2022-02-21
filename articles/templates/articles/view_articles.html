@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+
+{% block title %} 
+    View articles 
+{% endblock %}
+
+
+{% block content %}
+
+    <br>
+    <br>
+    <div class="col-11 mx-2">
+        <form action="{% url 'articles:search-article' %}">
+            <div class="input-group">
+                <input type="text" class="form-control" placeholder="Поиск.." name="search">
+                  <button class="btn btn-secondary" type="submit">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+        </svg>
+                  </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="row">
+        {% for article in articles %}
+            <div class="col-sm-10 offset-sm-2 col-md-6 offset-md-0 col-lg-5 col-xl-4 my-2">
+                <br>
+                <div class="card h-100" style="width: 16rem;">
+                    <img src="{{ article.card_img.url }}" class="card-img-top" class="rounded" alt="..." height="350px" >
+                    <div class="card-body">
+                        <h5 class="card-title"> <strong>{{ article.title }} </strong></h5>
+                        <p class="card-text"> {{ article.text|truncatechars:60 }} </p>
+                        <a href="{% url 'articles:view-article' article.slug %}" class="btn btn-success"><strong>Читать статью</strong></a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  <div class="col">
+    <div class="card h-100">
+      <img src="..." class="card-img-top" alt="...">
+      <div class="card-body">
+        <h5 class="card-title">Card title</h5>
+        <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+      </div>
+      <div class="card-footer">
+        <small class="text-muted">Last updated 3 mins ago</small>
+      </div>
+    </div>
+  </div>
+</div>
+{{ article.get_absloute_url }}

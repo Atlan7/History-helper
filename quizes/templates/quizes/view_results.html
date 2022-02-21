@@ -1,0 +1,51 @@
+{% block content %}
+    <br>
+    <br>
+        <h1> Результаты теста: </h1>
+        <br>
+         Правильно: {{ right_answ }} из {{ total_questions }}
+        <br>
+        {% for right_answer, gotten in res_of_quiz %}
+
+            <div class="row">
+                <div class="col-md-10 mx-2">
+
+                     
+                    <h2>{{ forloop.counter }}) <strong> {{ right_answer.question  }} </strong> </h2>
+                    <div class="bd-example" style="padding: 1.5rem;margin: 1rem -.75rem 0;border-width: 1px;border-radius: .50rem;border: solid #dee2e6;">
+                            <div class="alert alert-success" role="alert">
+                                <strong> Правильный ответ: </strong>
+                                        {{ right_answer.text }} 
+                            </div>
+
+                            {% if right_answer == gotten %}
+                                <div class="alert alert-success" role="alert">
+                                    <strong> Ваш ответ: </strong>
+                                        {{ gotten.text }} 
+                                    <br>
+                                </div>
+                            {% elif gotten == 'None' %} 
+                                <div class="alert alert-danger" role="alert">
+                                    <strong> Ваш ответ: </strong>
+                                        
+                                    <br>
+                                </div>
+                            {% else %}
+
+                                <div class="alert alert-danger" role="alert">
+                                    <strong> Ваш ответ: </strong>
+                                        {{ gotten.text }}
+                                    <br>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br>
+        {% endfor %}
+                
+                 
+    <br>
+    <br>
+{% endblock %}

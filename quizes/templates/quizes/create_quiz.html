@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %} 
+    Tecт
+{% endblock %}
+
+{% block content %}
+    <br>
+    <br>
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <h1> Проверка знаний  </h1>
+                <form action="" method="post">
+
+                    {% csrf_token %}
+
+                    {{ form.as_p }}
+
+                    <button type="submit" class="btn btn-success">
+                        Начать
+                    </button>
+                </form>
+            </div>
+        </div>
+    <br>
+    <br>
+{% endblock %}

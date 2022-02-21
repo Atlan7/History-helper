@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+
+{% block title %} 
+    View {{ article.name }} {% endblock %}
+{% block content %}
+    <style>
+        .info_about_article {
+            float: right;
+            padding: 50px;
+        }
+    </style>
+
+        <div class="row"> 
+            <div class="col-10 offset-1 col-sm-10 offset-sm-1 col-md-12 offset-md-0 my-5">
+
+
+                <h2 class="text-center"> {{ article.title }} </h2>
+                <center><img src="{{ article.title_img.url }}"></center>
+                <br><br>
+                {{ article.text|safe|linebreaks  }}
+                <br><br>
+
+
+                <div id="likes_and_dislikes_for_article_{{article.slug}}">
+                    <div class="d-flex flex-row">
+                        <form method="POST" action="{% url 'articles:like-article' article.slug %}">
+                            {% csrf_token %}
+                            <button style="background-color: transparent; border: none; box-shadow: none;" type="submit" onClick="likeArticle('{{article.pk}}')">
+                                {% if request.user in article.likes.all  %}
+                                    
+                                    <i class="bi bi-hand-thumbs-up-fill" id='like-icon-{{article.pk}}'>
+                                        {{ article.likes.all.count }}
+                                    </i>
+                                {% else %}
+                                    <i class="bi bi-hand-thumbs-up" id='like-icon-{{article.pk}}'>
+                                        {{ article.likes.all.count }}
+                                    </i>
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <form method="POST" action="{% url 'articles:dislike-article' article.slug %}">
+                            {% csrf_token %}
+                            <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                                {% if request.user in article.dislikes.all  %}
+                                    <i class="bi bi-hand-thumbs-down-fill">
+                                        {{ article.dislikes.all.count }}
+                                    </i>
+                                {% else %}
+                                    <i class="bi bi-hand-thumbs-down">
+                                        {{ article.dislikes.all.count }}
+                                    </i>
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
+                </div> <!-- row for LIKE and DISLIKE -->
+            </div> <!-- row for MAIN CONTENT -->
+        </div> <!-- WHOLE ROW -->
+
+
+    <hr>
+    <br>
+
+    <h2> Комментарии </h2>
+    <br>
+    {% if user.is_authenticated %}
+    <br>
+        <div class="row">
+            <!-- form for creating REVIEW for article -->
+            <form action="{% url 'articles:review-article' article_slug=article.slug %}" method="post">
+
+                {% csrf_token %}
+
+                {{ form.as_p }}
+                
+
+                <button type="submit" class="btn btn-success">
+                    Добавить комментарий 
+                </button>
+            </form>
+        </div>
+    {% else %}
+    <h5><a href="{% url 'accounts:registration' %}">Зарегистрируйтесь</a> или войдите в <a href="{% url 'accounts:login' %}" target="_blank">аккаунт </a> чтобы оставить комментарий.</h5>
+    {% endif %}
+    <br>
+    <br>
+    
+
+    {% if not reviews.all %}
+        <strong><p> Комментариев ещё нет. Ты можешь быть первым!</p></strong>
+    {% else %}
+        {% for review in reviews.all %}
+            {% if review.is_parent %}
+            
+                <div class="row">
+                    <div class="col">
+                        <div class="d-flex flex-start">
+                            <img class="rounded-circle shadow-1-strong me-3" src="{{ review.user.profile_image.url }}" width="65" height="65"/>
+                            <div class="flex-grow-1 flex-shrink-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div id="comment_{{ review.pk }}">
+
+                                        <p class="mb-1">
+                                            <strong>{{ review.user.username }} </strong> <span class="small">- {{ review.date_of_creating|date:'H:i, d/m/Y' }}</span>
+                                        </p>
+
+                                        <p class="small mb-1"> {{ review.comment }}</p>
+
+                                        <footer>
+                                            <div class="d-flex flex-row">
+
+                                                <!-- form for the LIKE REVIEW to the article -->
+                                                <form method="POST" action="{% url 'articles:like-review' article.slug review.pk %}">
+                                                    {% csrf_token %}
+                                                    <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                                                        {% if request.user in review.likes.all  %}
+                                                            <i class="bi bi-hand-thumbs-up-fill">
+                                                                {{ review.likes.all.count }}
+                                                            </i>
+                                                        {% else %}
+                                                            <i class="bi bi-hand-thumbs-up">
+                                                                {{ review.likes.all.count }}
+                                                            </i>
+                                                        {% endif %}
+                                                    </button>
+                                                </form>
+
+                                                <!-- form for the DISLIKE REVIEW to the article -->
+                                                <form method="POST" action="{% url 'articles:dislike-review' article.slug review.pk %}">
+                                                    {% csrf_token %}
+                                                    <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                                                        {% if request.user in review.dislikes.all  %}
+                                                            <i class="bi bi-hand-thumbs-down-fill">
+                                                                {{ review.dislikes.all.count }}
+                                                            </i>
+                                                        {% else %}
+                                                            <i class="bi bi-hand-thumbs-down">
+                                                                {{ review.dislikes.all.count }}
+                                                            </i>
+                                                        {% endif %}
+                                                    </button>
+                                                </form>
+
+                                                <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                                                    <i class="bi bi-reply mx-1" onClick="reviewReplyToggle('{{ review.pk }}')"></i>
+                                                </button>
+        
+                                                <br>
+                                              </div>
+                                                <div>
+                                                    <div class="row d-none" id="reply_to_review_{{review.pk}}" style="padding-left: 130px; width:900px;" >
+                                                        <!-- form for REPLY TO REVIEW for the article -->
+                                                            <form action="{% url 'articles:reply-to-review' article.slug review.pk  %}" method="post">
+
+                                                                {% csrf_token %}
+
+                                                                {{ reply_form.as_p }}
+                                                                
+
+                                                                <button type="submit" class="btn btn-success">
+                                                                    Ответить
+                                                                </button>
+                                                            </form>
+                                                    </div>
+                                                </div>
+                                            {% if review.children %}
+                                                <i class="bi bi-arrow-down">  
+                                                    <button  type="submit" onClick="showRepliesToReview( {{ review.pk }} )"style="background-color: transparent; border: none; box-shadow: none;">
+                                                        Показать ответы {{ review.children.all.count }}
+                                                    </button>
+                                                </i>
+
+
+                                            <br>
+                                            <br>
+
+                                            {% endif %}
+                                        </footer>
+                                    </div> <!-- COMMENT -->
+                                </div>
+                            </div>
+                        </div> <!-- COL -->
+                    </div> <!-- ROW -->
+
+                        <br>
+                        <br>
+                        <br>
+
+                    <div class="children_reviews d-none" id="replies_for_review_{{ review.pk }}" >
+                        {% for child_reply in review.children %}
+
+                            <div class="row">
+                                <div class="col">
+                                    <div class="d-flex flex-start" style="padding-left: 90px;">
+                                        <img class="rounded-circle shadow-1-strong me-3" src="{{ child_reply.user.profile_image.url }}" width="65" height="65"/>
+                                        <div class="flex-grow-1 flex-shrink-1"> <div class="d-flex justify-content-between align-items-center">
+                                                <div id="reply_to_review_by_{{ child_reply.pk }}">
+
+                                                    <p class="mb-1">
+                                                        <strong>
+                                                            {{ child_reply.user.username }} 
+                                                        </strong> 
+                                                        <span class="small">
+                                                            - {{ child_reply.date_of_creating|date:'H:i, d/m/Y' }}
+                                                        </span>
+                                                    </p>
+
+                                                    <p class="small mb-1"> {{ child_reply.comment }}</p>
+
+                                                    <footer>
+                                                        <div class="d-flex flex-row">
+
+                                                            <!-- form for the LIKE REVIEW to the article -->
+                                                            <form method="POST" action="{% url 'articles:like-review' article.slug child_reply.pk %}">
+                                                                {% csrf_token %}
+                                                                <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                                                                    {% if request.user in child_reply.likes.all  %}
+                                                                        <i class="bi bi-hand-thumbs-up-fill">
+                                                                            {{ child_reply.likes.all.count }}
+                                                                        </i>
+                                                                    {% else %}
+                                                                        <i class="bi bi-hand-thumbs-up">
+                                                                            {{ child_reply.likes.all.count }}
+                                                                        </i>
+                                                                    {% endif %}
+                                                                </button>
+                                                            </form>
+
+                                                            <!-- form for the DISLIKE REVIEW to the article -->
+                                                            <form method="POST" action="{% url 'articles:dislike-review' article.slug child_reply.pk %}">
+                                                                {% csrf_token %}
+                                                                <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                                                                    {% if request.user in child_reply.dislikes.all  %}
+                                                                        <i class="bi bi-hand-thumbs-down-fill">
+                                                                            {{ child_reply.dislikes.all.count }}
+                                                                        </i>
+                                                                    {% else %}
+                                                                        <i class="bi bi-hand-thumbs-down">
+                                                                            {{ child_reply.dislikes.all.count }}
+                                                                        </i>
+                                                                    {% endif %}
+                                                                </button>
+                                                            </form>
+
+                                                            <button style="background-color: transparent; border: none; box-shadow: none;" type="submit">
+                                                                <i class="bi bi-reply mx-1" onClick="reviewReplyToggle('{{ child_reply.pk }}')"></i>
+                                                            </button>
+                    
+                                                            <br>
+                                                          </div>
+                                                            <div>
+                                                                <div class="row d-none" id="{{child_reply.pk}}" style="padding-left: 130px; width:900px;">
+                                                                    <!-- form for REPLY TO REVIEW for the article -->
+                                                                        <form action="{% url 'articles:reply-to-review' article.slug review.pk  %}" method="post">
+
+                                                                            {% csrf_token %}
+
+                                                                            {{ reply_form.as_p }}
+                                                                            
+
+                                                                            <button type="submit" class="btn btn-success">
+                                                                                Ответить
+                                                                            </button>
+                                                                            <br><br><br><br>
+                                                                        </form>
+                                                                </div>
+                                                            </div>
+                                                    </footer>
+                                                </div> <!-- COMMENT -->
+                                            </div>
+                                        </div>
+                                    </div> <!-- COL -->
+                                </div> <!-- ROW -->
+                            </div> <!-- ROW -->
+                        <br>
+                        {% endfor %}
+                    </div>
+                <br>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+        <br><br>
+
+    <script type="text/javascript">
+
+
+    function reviewReplyToggle(parent_id) {
+
+        let div = document.getElementById(`reply_to_review_${parent_id}`)  
+
+        if (div.classList.contains("d-none")) {
+            div.classList.remove("d-none")
+        } else {
+            div.classList.add("d-none")
+        }
+    }
+
+        
+    function showRepliesToReview(parent_id) {
+
+        let div = document.getElementById(`replies_for_review_${parent_id}`)  
+
+        if (div.classList.contains("d-none")) {
+            div.classList.remove("d-none")
+        } else {
+            div.classList.add("d-none")
+        }
+    }
+
+    </script>
+
+{% endblock %}
+
+                else {
+                        if (thumb_field == 'True') {
+                            $('#article_dislike').removeClass('bi bi-hand-thumbs-down').addClass('#bi bi-hand-thumbs-up-field');
+                        } 
+                        else {
+                            $('#article_dislike').removeClass('bi bi-hand-thumbs-up-filed').addClass('bi bi-hand-thumbs-up');
+                        }
+                    }
