@@ -24,8 +24,8 @@ class Profile(AbstractUser):
     students = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True) # Students of person 
     number_of_school = models.PositiveSmallIntegerField(blank=True, null=True)
     bio = models.TextField(max_length=500, blank=True, null=True)
-#    liked_articles = models.ForeignKey(Article, related_name='liked_articles', on_delete=models.CASCADE, blank=True, null=True)
-#    disliked_articles = models.ForeignKey(Article, related_name='disliked_articles', on_delete=models.CASCADE, blank=True, null=True)
+    liked_articles = models.ForeignKey(Article, related_name='liked_articles', on_delete=models.CASCADE, blank=True, null=True)
+    disliked_articles = models.ForeignKey(Article, related_name='disliked_articles', on_delete=models.CASCADE, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
